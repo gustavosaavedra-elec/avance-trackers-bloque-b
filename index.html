@@ -86,6 +86,8 @@ td.z{color:var(--muted)}
 .dayh .d{font-family:var(--f-display);font-weight:600;font-size:18px;line-height:1.1}
 .dayh .m{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
 .foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
+.colsb{margin:0 0 10px;font-size:13px}.colsb summary{cursor:pointer;display:inline-block;border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-weight:500;background:var(--surface)}.colsb[open] summary{margin-bottom:8px}.colsl{display:flex;flex-wrap:wrap;gap:6px 16px}.colsl label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.kpi.h2 :is(th,td):nth-child(2),.kpi.h3 :is(th,td):nth-child(3),.kpi.h4 :is(th,td):nth-child(4),.kpi.h5 :is(th,td):nth-child(5),.kpi.h6 :is(th,td):nth-child(6),.kpi.h7 :is(th,td):nth-child(7),.kpi.h8 :is(th,td):nth-child(8),.kpi.h9 :is(th,td):nth-child(9),.kpi.h10 :is(th,td):nth-child(10),.kpi.h11 :is(th,td):nth-child(11),.kpi.h12 :is(th,td):nth-child(12),.kpi.h13 :is(th,td):nth-child(13){display:none}
 </style>
 
 <header class="hero">
@@ -106,6 +108,7 @@ td.z{color:var(--muted)}
   <section class="sec" id="estado">
     <div class="sech"><h2>Estado por actividad</h2><span class="sub">Toca una actividad para ver su detalle. Ritmo real: promedio de los últimos 5 días hábiles.</span></div>
     <div class="panel scroll">
+      <details class="colsb" id="cols-box"><summary>Columnas</summary><div class="colsl"><label><input type="checkbox" data-col="2" checked>Real</label><label><input type="checkbox" data-col="3" checked>Esperado</label><label><input type="checkbox" data-col="4" checked>Ejecutado</label><label><input type="checkbox" data-col="5" checked>Total</label><label><input type="checkbox" data-col="6" checked>Ritmo real/día</label><label><input type="checkbox" data-col="7" checked>KPI necesario/día</label><label><input type="checkbox" data-col="8" checked>Fin plan</label><label><input type="checkbox" data-col="9" checked>Fin proyectado</label><label><input type="checkbox" data-col="10" checked>Remanente</label><label><input type="checkbox" data-col="11" checked>A recuperar</label><label><input type="checkbox" data-col="12" checked>KPI sábado</label><label><input type="checkbox" data-col="13" checked>Estado</label></div></details>
       <table class="kpi" aria-label="Estado por actividad">
         <thead><tr><th>Actividad</th><th>Real</th><th>Esperado</th><th>Ejecutado</th><th>Total</th><th>Ritmo real/día</th><th>KPI necesario/día</th><th>Fin plan</th><th>Fin proyectado</th><th>Remanente</th><th>A recuperar</th><th>KPI sábado</th><th>Estado</th></tr></thead>
         <tbody id="kpi-rows"></tbody>
@@ -345,6 +348,19 @@ function drawDias() {
 }
 function select(a) { SEL = a; el('act').value = a; drawTable(); drawDetalle(); }
 el('act').addEventListener('change', (e) => select(e.target.value));
+/* Columnas visibles */
+(() => {
+  const box = el('cols-box'), tbl = document.querySelector('table.kpi'); if (!box || !tbl) return;
+  const KEY = 'mt-cols-ocultas'; let hid = ['9'];
+  try { const v = localStorage.getItem(KEY); if (v !== null) hid = JSON.parse(v); } catch { /* sin almacenamiento */ }
+  const apply = () => box.querySelectorAll('input[data-col]').forEach((i) => { const h = hid.includes(i.dataset.col); i.checked = !h; tbl.classList.toggle('h' + i.dataset.col, h); });
+  box.querySelectorAll('input[data-col]').forEach((i) => i.addEventListener('change', () => {
+    hid = hid.filter((c) => c !== i.dataset.col); if (!i.checked) hid.push(i.dataset.col);
+    try { localStorage.setItem(KEY, JSON.stringify(hid)); } catch { /* sin almacenamiento */ }
+    apply();
+  }));
+  apply();
+})();
 drawTable(); drawDetalle(); drawDias();
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(drawDetalle, 150); });
 </script>
